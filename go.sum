@@ -1,0 +1,14 @@
+github.com/go-sql-driver/mysql v1.6.0 h1:BCTh4TKNUYmOmMUcQ3IipzF5prigylS7XXjEkfCHuOE=
+github.com/go-sql-driver/mysql v1.6.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=
+github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
+github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/latonaio/golang-logging-library-for-data-platform v1.0.2 h1:JeW084SwEzWCMroVNoxi6QfDiy5H6IxKFs7qMONcq+4=
+github.com/latonaio/golang-logging-library-for-data-platform v1.0.2/go.mod h1:cvfCKdvlnYT3ENBEICtk5SH2y3BESB+oDg+FJbZYW2o=
+github.com/latonaio/golang-mysql-network-connector v1.0.0 h1:+HcwgHYX6Cmxop+gT7NkW0/DVNwjFAWh05FUpL083mk=
+github.com/latonaio/golang-mysql-network-connector v1.0.0/go.mod h1:n3yE01eR5x5v9uqi3Ta1FuHW6Qy6XsOlTpe30Yr6jvI=
+github.com/latonaio/rabbitmq-golang-client-for-data-platform v1.0.2 h1:xDllncfnlaFJxIJbR/lvjb1eFpKWX6AH4V7E13r+JP0=
+github.com/latonaio/rabbitmq-golang-client-for-data-platform v1.0.2/go.mod h1:ctn3XnL+GVLS6+I1XyEdoA/w5gmNwinjvYCuAB+FqLw=
+github.com/streadway/amqp v1.0.0 h1:kuuDrUJFZL1QYL9hUNuCxNObNzB0bV/ZG5jV3RWAQgo=
+github.com/streadway/amqp v1.0.0/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=
+golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 h1:H2TDz8ibqkAF6YGhCdN3jS9O0/s90v0rJh3X/OLHEUk=
+golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2/go.mod h1:K8+ghG5WaK9qNqU5K3HdILfMLy1f3aNYFI/wnl100a8=

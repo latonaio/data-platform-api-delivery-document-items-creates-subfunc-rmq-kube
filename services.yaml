@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: data-platform-api-delivery-document-items-creates-subfunc
+  name: data-platform-api-delivery-document-items-creates-subfunc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: data-platform-api-delivery-document-items-creates-subfunc
+  template:
+    metadata:
+      labels:
+        run: data-platform-api-delivery-document-items-creates-subfunc
+    spec:
+      nodeName: worker
+      hostname: data-platform-api-delivery-document-items-creates-subfunc
+      containers:
+        - name: data-platform-api-delivery-document-items-creates-subfunc
+          image: latonaio/data-platform-api-delivery-document-items-creates-subfunc-rmq-kube
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/aion/Data
+            - name: ui
+              mountPath: /var/lib/aion/UI/data-platform-api-delivery-document-items-creates-subfunc-rmq-kube/public/
+          env:
+            - name : "RMQ_QUEUE_FROM"
+              value: "data-platform-api-delivery-document-items-creates-subfunc-queue"
+            - name : "RMQ_QUEUE_TO"
+              value: "data-platform-api-delivery-document-items-creates-subfunc-queue"
+            - name : "MYSQL_DB_NAME"
+              value: "DataPlatformMastersAndTransactionsMysqlKube"
+          envFrom:
+            - configMapRef:
+                name: env-config
+            - secretRef:
+                name: env-secret
+      volumes:
+        - name: data
+          hostPath:
+            path: /var/lib/aion/default/Data
+        - name: ui
+          hostPath:
+            path: /var/lib/aion/UI/data-platform-api-delivery-document-items-creates-subfunc-rmq-kube/public/
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: data-platform-api-delivery-document-items-creates-subfunc
+  name: data-platform-api-delivery-document-items-creates-subfunc
+spec:
+  selector:
+    run: data-platform-api-delivery-document-items-creates-subfunc
+  type: NodePort
+  ports:
+    - name: api
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+      nodePort: 30912
