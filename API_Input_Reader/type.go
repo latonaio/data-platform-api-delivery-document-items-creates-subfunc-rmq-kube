@@ -1,18 +1,41 @@
 package api_input_reader
 
 type SDC struct {
-	ConnectionKey     string           `json:"connection_key"`
-	Result            bool             `json:"result"`
-	RedisKey          string           `json:"redis_key"`
-	Filepath          string           `json:"filepath"`
-	APIStatusCode     int              `json:"api_status_code"`
-	RuntimeSessionID  string           `json:"runtime_session_id"`
-	BusinessPartnerID *int             `json:"business_partner"`
-	ServiceLabel      string           `json:"service_label"`
-	DeliveryDocument  DeliveryDocument `json:"DeliveryDocument"`
-	APISchema         string           `json:"api_schema"`
-	Accepter          []string         `json:"accepter"`
-	Deleted           bool             `json:"deleted"`
+	ConnectionKey                   string                          `json:"connection_key"`
+	Result                          bool                            `json:"result"`
+	RedisKey                        string                          `json:"redis_key"`
+	Filepath                        string                          `json:"filepath"`
+	APIStatusCode                   int                             `json:"api_status_code"`
+	RuntimeSessionID                string                          `json:"runtime_session_id"`
+	BusinessPartnerID               *int                            `json:"business_partner"`
+	ServiceLabel                    string                          `json:"service_label"`
+	DeliveryDocumentInputParameters DeliveryDocumentInputParameters `json:"DeliveryDocumentInputParameters"`
+	DeliveryDocument                DeliveryDocument                `json:"DeliveryDocument"`
+	APISchema                       string                          `json:"api_schema"`
+	Accepter                        []string                        `json:"accepter"`
+	Deleted                         bool                            `json:"deleted"`
+}
+
+type DeliveryDocumentInputParameters struct {
+	IssuingPlantPartnerFunction       string    `json:"IssuingPlantPartnerFunction"`
+	IssuingPlantBusinessPartner       *[]*int   `json:"IssuingPlantBusinessPartner"`
+	IssuingPlantBusinessPartnerFrom   *int      `json:"IssuingPlantBusinessPartnerFrom"`
+	IssuingPlantBusinessPartnerTo     *int      `json:"IssuingPlantBusinessPartnerTo"`
+	IssuingPlant                      *[]*int   `json:"IssuingPlant"`
+	IssuingPlantFrom                  *int      `json:"IssuingPlantFrom"`
+	IssuingPlantTo                    *int      `json:"IssuingPlantTo"`
+	ReceivingPlantPartnerFunction     string    `json:"ReceivingPlantPartnerFunction"`
+	ReceivingPlantBusinessPartner     *[]*int   `json:"ReceivingPlantBusinessPartner"`
+	ReceivingPlantBusinessPartnerFrom *int      `json:"ReceivingPlantBusinessPartnerFrom"`
+	ReceivingPlantBusinessPartnerTo   *int      `json:"ReceivingPlantBusinessPartnerTo"`
+	ReceivingPlant                    *[]*int   `json:"ReceivingPlant"`
+	ReceivingPlantFrom                int       `json:"ReceivingPlantFrom"`
+	ReceivingPlantTo                  int       `json:"ReceivingPlantTo"`
+	ConfirmedDeliveryDate             *[]string `json:"ConfirmedDeliveryDate"`
+	ConfirmedDeliveryDateFrom         string    `json:"ConfirmedDeliveryDateFrom"`
+	ConfirmedDeliveryDateTo           string    `json:"ConfirmedDeliveryDateTo"`
+	ReferenceDocument                 *int      `json:"ReferenceDocument"`
+	ReferenceDocumentItem             *int      `json:"ReferenceDocumentItem"`
 }
 
 type DeliveryDocument struct {
@@ -48,7 +71,6 @@ type DeliveryDocument struct {
 	HeaderBillingBlockReason      *bool           `json:"HeaderBillingBlockReason"`
 	HeaderGrossWeight             *float32        `json:"HeaderGrossWeight"`
 	HeaderNetWeight               *float32        `json:"HeaderNetWeight"`
-	HeaderVolume                  *string         `json:"HeaderVolume"`
 	HeaderVolumeUnit              *string         `json:"HeaderVolumeUnit"`
 	HeaderWeightUnit              *string         `json:"HeaderWeightUnit"`
 	Incoterms                     *string         `json:"Incoterms"`

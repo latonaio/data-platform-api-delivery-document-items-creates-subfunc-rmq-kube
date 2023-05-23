@@ -12,17 +12,17 @@ func (f *SubFunction) SetValue(
 	psdc *api_processing_data_formatter.SDC,
 	osdc *dpfm_api_output_formatter.SDC,
 ) (*dpfm_api_output_formatter.SDC, error) {
-	var outItem *[]dpfm_api_output_formatter.Item
+	var item *[]dpfm_api_output_formatter.Item
 	var err error
 
-	outItem, err = dpfm_api_output_formatter.ConvertToItem(sdc, psdc)
+	item, err = dpfm_api_output_formatter.ConvertToItem(sdc, psdc)
 	if err != nil {
 		fmt.Printf("err = %+v \n", err)
 		return nil, err
 	}
 
 	osdc.Message = dpfm_api_output_formatter.Message{
-		Item: *outItem,
+		Item: item,
 	}
 
 	return osdc, nil

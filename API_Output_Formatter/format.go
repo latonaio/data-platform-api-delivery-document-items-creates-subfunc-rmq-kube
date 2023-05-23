@@ -10,12 +10,12 @@ func ConvertToItem(
 	sdc *api_input_reader.SDC,
 	psdc *api_processing_data_formatter.SDC,
 ) (*[]Item, error) {
-	itemOrdersItem := psdc.ItemOrdersItem
+	ordersItem := psdc.OrdersItem
 	calculateDeliveryDocument := psdc.CalculateDeliveryDocument
 	deliveryDocumentItem := psdc.DeliveryDocumentItem
-	items := make([]Item, 0, len(*itemOrdersItem))
+	items := make([]Item, 0, len(*ordersItem))
 
-	for i, v := range *itemOrdersItem {
+	for i, v := range *ordersItem {
 		item := Item{}
 		inputItem := sdc.DeliveryDocument.DeliveryDocumentItem[0]
 		inputData, err := json.Marshal(inputItem)
@@ -36,7 +36,7 @@ func ConvertToItem(
 			return nil, err
 		}
 
-		item.DeliveryDocument = calculateDeliveryDocument.DeliveryDocumentLatestNumber
+		item.DeliveryDocument = calculateDeliveryDocument.DeliveryDocument
 		item.DeliveryDocumentItem = (*deliveryDocumentItem)[i].DeliveryDocumentItemNumber
 		items = append(items, item)
 	}

@@ -55,115 +55,167 @@ type EC_MC struct {
 
 type SDC struct {
 	MetaData                  *MetaData                  `json:"MetaData"`
-	OrderID                   *[]OrderID                 `json:"OrderID`
-	CalculateDeliveryDocument *CalculateDeliveryDocument `json:"CalculateDeliveryDocument`
-	ItemOrdersItem            *[]ItemOrdersItem          `json"ItemOrdersItem"`
+	ProcessType               *ProcessType               `json:"ProcessType"`
+	OrderID                   *[]OrderID                 `json:"OrderID"`
+	OrderItemScheduleLine     *[]OrderItemScheduleLine   `json:"OrderItemScheduleLine"`
+	CalculateDeliveryDocument *CalculateDeliveryDocument `json:"CalculateDeliveryDocument"`
 	DeliveryDocumentItem      *[]DeliveryDocumentItem    `json:"DeliveryDocumentItem"`
+	OrdersItem                *[]OrdersItem              `json:"OrdersItem"`
 }
 
+// Initializer
 type MetaData struct {
 	BusinessPartnerID *int   `json:"business_partner"`
 	ServiceLabel      string `json:"service_label"`
 }
 
+type ProcessType struct {
+	BulkProcess       bool `json:"BulkProcess"`
+	IndividualProcess bool `json:"IndividualProcess"`
+}
+
 type OrderIDKey struct {
-	ReferenceDocument               *int   `json:"ReferenceDocument"`
-	HeaderCompleteDeliveryIsDefined *bool  `json:"HeaderCompleteDeliveryIsDefined"`
-	OverallDeliveryStatus           string `json:"OverallDeliveryStatus"`
+	OrderID                           *int   `json:"OrderID"`
+	OrderItem                         *int   `json:"OrderItem"`
+	IssuingPlantPartnerFunction       string `json:"IssuingPlantPartnerFunction"`
+	IssuingPlantBusinessPartner       []*int `json:"IssuingPlantBusinessPartner"`
+	IssuingPlantBusinessPartnerFrom   *int   `json:"IssuingPlantBusinessPartnerFrom"`
+	IssuingPlantBusinessPartnerTo     *int   `json:"IssuingPlantBusinessPartnerTo"`
+	ReceivingPlantPartnerFunction     string `json:"ReceivingPlantPartnerFunction"`
+	ReceivingPlantBusinessPartner     []*int `json:"ReceivingPlantBusinessPartner"`
+	ReceivingPlantBusinessPartnerFrom *int   `json:"ReceivingPlantBusinessPartnerFrom"`
+	ReceivingPlantBusinessPartnerTo   *int   `json:"ReceivingPlantBusinessPartnerTo"`
+	IssuingPlant                      []*int `json:"IssuingPlant"`
+	IssuingPlantFrom                  *int   `json:"IssuingPlantFrom"`
+	IssuingPlantTo                    *int   `json:"IssuingPlantTo"`
+	ReceivingPlant                    []*int `json:"ReceivingPlant"`
+	ReceivingPlantFrom                int    `json:"ReceivingPlantFrom"`
+	ReceivingPlantTo                  int    `json:"ReceivingPlantTo"`
+	ItemCompleteDeliveryIsDefined     bool   `json:"ItemCompleteDeliveryIsDefined"`
+	ItemDeliveryStatus                string `json:"ItemDeliveryStatus"`
+	ItemDeliveryBlockStatus           bool   `json:"ItemDeliveryBlockStatus"`
 }
 
 type OrderID struct {
-	ReferenceDocument               *int   `json:"ReferenceDocument"`
-	OrderID                         *int   `json:"OrderID`
-	HeaderCompleteDeliveryIsDefined *bool  `json:"HeaderCompleteDeliveryIsDefined"`
-	OverallDeliveryStatus           string `json:"OverallDeliveryStatus"`
+	OrderID                       int     `json:"OrderID"`
+	OrderItem                     int     `json:"OrderItem"`
+	IssuingPlantPartnerFunction   *string `json:"IssuingPlantPartnerFunction"`
+	IssuingPlantBusinessPartner   *int    `json:"IssuingPlantBusinessPartner"`
+	ReceivingPlantPartnerFunction *string `json:"ReceivingPlantPartnerFunction"`
+	ReceivingPlantBusinessPartner *int    `json:"ReceivingPlantBusinessPartner"`
+	IssuingPlant                  *int    `json:"IssuingPlant"`
+	ReceivingPlant                *int    `json:"ReceivingPlant"`
+	ItemCompleteDeliveryIsDefined *bool   `json:"ItemCompleteDeliveryIsDefined"`
+	ItemDeliveryStatus            *string `json:"ItemDeliveryStatus"`
+	ItemDeliveryBlockStatus       *bool   `json:"ItemDeliveryBlockStatus"`
 }
 
+type OrderItemScheduleLineKey struct {
+	OrderID                             []int    `json:"OrderID"`
+	OrderItem                           []int    `json:"OrderItem"`
+	ItemScheduleLineDeliveryBlockStatus bool     `json:"ItemScheduleLineDeliveryBlockStatus"`
+	ConfirmedDeliveryDate               []string `json:"ConfirmedDeliveryDate"`
+	ConfirmedDeliveryDateFrom           string   `json:"ConfirmedDeliveryDateFrom"`
+	ConfirmedDeliveryDateTo             string   `json:"ConfirmedDeliveryDateTo"`
+}
+
+type OrderItemScheduleLine struct {
+	OrderID                             int      `json:"OrderID"`
+	OrderItem                           int      `json:"OrderItem"`
+	ItemScheduleLineDeliveryBlockStatus *bool    `json:"ItemScheduleLineDeliveryBlockStatus"`
+	ConfirmedDeliveryDate               *string  `json:"ConfirmedDeliveryDate"`
+	OrderItemScheduleLine               int      `json:"OrderItemScheduleLine"`
+	ScheduleLineOrderQuantity           *float32 `json:"ScheduleLineOrderQuantity"`
+	OpenConfdDelivQtyInOrdQtyUnit       *float32 `json:"OpenConfdDelivQtyInOrdQtyUnit"`
+}
+
+// Header
 type CalculateDeliveryDocumentKey struct {
 	ServiceLabel             string `json:"service_label"`
-	FieldNameWithNumberRange string
+	FieldNameWithNumberRange string `json:"FieldNameWithNumberRange"`
 }
 
 type CalculateDeliveryDocumentQueryGets struct {
 	ServiceLabel                 string `json:"service_label"`
-	FieldNameWithNumberRange     string
-	DeliveryDocumentLatestNumber *int
+	FieldNameWithNumberRange     string `json:"FieldNameWithNumberRange"`
+	DeliveryDocumentLatestNumber *int   `json:"DeliveryDocumentLatestNumber"`
 }
 
 type CalculateDeliveryDocument struct {
-	DeliveryDocumentLatestNumber *int
-	DeliveryDocument             *int `json:"DeliveryDocument"`
+	DeliveryDocumentLatestNumber *int `json:"DeliveryDocumentLatestNumber"`
+	DeliveryDocument             int  `json:"DeliveryDocument"`
 }
 
+// Item
 type DeliveryDocumentItem struct {
 	DeliveryDocumentItemNumber int `json:"DeliveryDocumentItemNumber"`
 }
 
-type ItemOrdersItemKey struct {
-	OrderID                       *int   `json:"OrderID"`
-	ItemCompleteDeliveryIsDefined *bool  `json:"ItemCompleteDeliveryIsDefined"`
-	StockConfirmationStatus       string `json:"StockConfirmationStatus"`
-}
-
-type ItemOrdersItem struct {
-	DeliveryDocument                       *int     `json:"DeliveryDocument`
-	OrderID                                *int     `json:"OrderID"`
-	ItemCompleteDeliveryIsDefined          bool     `json:"ItemCompleteDeliveryIsDefined"`
-	OrderItem                              *int     `json:"OrderItem"`
-	OrderItemCategory                      string   `json:"OrderItemCategory"`
-	OrderItemText                          string   `json:"OrderItemText"`
-	Product                                string   `json:"Product"`
-	ProductStandardID                      string   `json:"ProductStandardID"`
-	BaseUnit                               string   `json:"BaseUnit`
-	OrderQuantityInBaseUnit                *string  `json:"OrderQuantityInBaseUnit`
-	StockConfirmationPartnerFunction       *string  `json:"StockConfirmationPartnerFunction"`
-	StockConfirmationBusinessPartner       *int     `json:"StockConfirmationBusinessPartner"`
-	StockConfirmationPlant                 *string  `json:"StockConfirmationPlant"`
-	StockConfirmationPolicy                *string  `json:"StockConfirmationPolicy"`
-	StockConfirmationStatus                *string  `json:"StockConfirmationStatus"`
-	ItemGrossWeight                        *float32 `json:"ItemGrossWeight`
-	ItemNetWeight                          *float32 `json:"ItemNetWeight"`
-	ItemWeightUnit                         *string  `json:"ItemWeightUnit"`
-	ProductGroup                           *string  `json:"ProductGroup"`
-	ProductionPlantPartnerFunction         *string  `json:"ProductionPlantPartnerFunction"`
-	ProductionPlantBusinessPartner         *string  `json:"ProductionPlantBusinessPartner"`
-	ProductionPlant                        *string  `json:"ProductionPlant"`
-	ProductionPlantTimeZone                *string  `json:"ProductionPlantTimeZone"`
-	ProductionPlantStorageLocation         *string  `json:"ProductionPlantStorageLocation`
-	IssuingPlantPartnerFunction            *string  `json:"IssuingPlantPartnerFunction"`
-	IssuingPlantBusinessPartner            *string  `json:"IssuingPlantBusinessPartner"`
-	IssuingPlant                           *string  `json:"IssuingPlant"`
-	IssuingPlantTimeZone                   *string  `json:"IssuingPlantTimeZone"`
-	IssuingPlantStorageLocation            *string  `json:"IssuingPlantStorageLocation"`
-	ReceivingPlantPartnerFunction          *string  `json:"ReceivingPlantPartnerFunction"`
-	ReceivingPlantBusinessPartner          *string  `json:"ReceivingPlantBusinessPartner"`
-	ReceivingPlant                         *string  `json:"ReceivingPlant"`
-	ReceivingPlantTimeZone                 *string  `json:"ReceivingPlantTimeZone"`
-	ReceivingPlantStorageLocation          *string  `json:"ReceivingPlantStorageLocation`
-	ProductIsBatchManagedInProductionPlant *bool    `json:"ProductIsBatchManagedInProductionPlant"`
-	ProductIsBatchManagedInIssuingPlant    *bool    `json:"ProductIsBatchManagedInIssuingPlant"`
-	ProductIsBatchManagedInReceivingPlant  *bool    `json:"ProductIsBatchManagedInReceivingPlant"`
-	BatchMgmtPolicyInProductionPlant       *string  `json:"BatchMgmtPolicyInProductionPlant"`
-	BatchMgmtPolicyInIssuingPlant          *string  `json:"BatchMgmtPolicyInIssuingPlant"`
-	BatchMgmtPolicyInReceivingPlant        *string  `json:"BatchMgmtPolicyInReceivingPlant`
-	ProductionPlantBatch                   *string  `json:"ProductionPlantBatch"`
-	IssuingPlantBatch                      *string  `json:"IssuingPlantBatch"`
-	ReceivingPlantBatch                    *string  `json:"ReceivingPlantBatch"`
-	ProductionPlantBatchValidityStartDate  *string  `json:"ProductionPlantBatchValidityStartDate"`
-	ProductionPlantBatchValidityEndDate    *string  `json:"ProductionPlantBatchValidityEndDate"`
-	IssuingPlantBatchValidityStartDate     *string  `json:"IssuingPlantBatchValidityStartDate"`
-	IssuingPlantBatchValidityEndDate       *string  `json:"IssuingPlantBatchValidityEndDate"`
-	ReceivingPlantBatchValidityStartDate   *string  `json:"ReceivingPlantBatchValidityStartDate"`
-	ReceivingPlantBatchValidityEndDate     *string  `json:"ReceivingPlantBatchValidityEndDate"`
-	Incoterms                              *string  `json:"Incoterms`
-	BPTaxClassification                    string   `json:"BPTaxClassification"`
-	ProductTaxClassification               string   `json:"ProductTaxClassification"`
-	BPAccountAssignmentGroup               string   `json:"BPAccountAssignmentGroup"`
-	ProductAccountAssignmentGroup          string   `json:"ProductAccountAssignmentGroup"`
-	PaymentTerms                           string   `json:"PaymentTerms"`
-	PaymentMethod                          string   `json:"PaymentMethod`
-	Project                                *string  `json:"Project"`
-	TaxCode                                *string  `json:"TaxCode"`
-	TaxRate                                *float32 `json:"TaxRate"`
-	CountryOfOrigin                        *string  `json:"CountryOfOrigin"`
+type OrdersItem struct {
+	OrderID                                      int      `json:"OrderID"`
+	OrderItem                                    int      `json:"OrderItem"`
+	OrderItemCategory                            string   `json:"OrderItemCategory"`
+	OrderItemText                                string   `json:"OrderItemText"`
+	OrderItemTextByBuyer                         string   `json:"OrderItemTextByBuyer"`
+	OrderItemTextBySeller                        string   `json:"OrderItemTextBySeller"`
+	Product                                      string   `json:"Product"`
+	ProductStandardID                            string   `json:"ProductStandardID"`
+	BaseUnit                                     string   `json:"BaseUnit"`
+	StockConfirmationPartnerFunction             *string  `json:"StockConfirmationPartnerFunction"`
+	StockConfirmationBusinessPartner             *int     `json:"StockConfirmationBusinessPartner"`
+	StockConfirmationPlant                       *string  `json:"StockConfirmationPlant"`
+	StockConfirmationPlantBatch                  *string  `json:"StockConfirmationPlantBatch"`
+	StockConfirmationPlantBatchValidityStartDate *string  `json:"StockConfirmationPlantBatchValidityStartDate"`
+	StockConfirmationPlantBatchValidityEndDate   *string  `json:"StockConfirmationPlantBatchValidityEndDate"`
+	OrderQuantityInBaseUnit                      float32  `json:"OrderQuantityInBaseUnit"`
+	OrderQuantityInIssuingUnit                   float32  `json:"OrderQuantityInIssuingUnit"`
+	OrderQuantityInReceivingUnit                 float32  `json:"OrderQuantityInReceivingUnit"`
+	OrderIssuingUnit                             string   `json:"OrderIssuingUnit"`
+	OrderReceivingUnit                           string   `json:"OrderReceivingUnit"`
+	StockConfirmationPolicy                      *string  `json:"StockConfirmationPolicy"`
+	StockConfirmationStatus                      *string  `json:"StockConfirmationStatus"`
+	ItemWeightUnit                               *string  `json:"ItemWeightUnit"`
+	ItemGrossWeight                              *float32 `json:"ItemGrossWeight"`
+	ItemNetWeight                                *float32 `json:"ItemNetWeight"`
+	ProductionPlantPartnerFunction               *string  `json:"ProductionPlantPartnerFunction"`
+	ProductionPlantBusinessPartner               *int     `json:"ProductionPlantBusinessPartner"`
+	ProductionPlant                              *string  `json:"ProductionPlant"`
+	ProductionPlantTimeZone                      *string  `json:"ProductionPlantTimeZone"`
+	ProductionPlantStorageLocation               *string  `json:"ProductionPlantStorageLocation"`
+	IssuingPlantPartnerFunction                  *string  `json:"IssuingPlantPartnerFunction"`
+	IssuingPlantBusinessPartner                  *int     `json:"IssuingPlantBusinessPartner"`
+	IssuingPlant                                 *string  `json:"IssuingPlant"`
+	IssuingPlantTimeZone                         *string  `json:"IssuingPlantTimeZone"`
+	IssuingPlantStorageLocation                  *string  `json:"IssuingPlantStorageLocation"`
+	ReceivingPlantPartnerFunction                *string  `json:"ReceivingPlantPartnerFunction"`
+	ReceivingPlantBusinessPartner                *int     `json:"ReceivingPlantBusinessPartner"`
+	ReceivingPlant                               *string  `json:"ReceivingPlant"`
+	ReceivingPlantTimeZone                       *string  `json:"ReceivingPlantTimeZone"`
+	ReceivingPlantStorageLocation                *string  `json:"ReceivingPlantStorageLocation"`
+	ProductIsBatchManagedInProductionPlant       *bool    `json:"ProductIsBatchManagedInProductionPlant"`
+	ProductIsBatchManagedInIssuingPlant          *bool    `json:"ProductIsBatchManagedInIssuingPlant"`
+	ProductIsBatchManagedInReceivingPlant        *bool    `json:"ProductIsBatchManagedInReceivingPlant"`
+	BatchMgmtPolicyInProductionPlant             *string  `json:"BatchMgmtPolicyInProductionPlant"`
+	BatchMgmtPolicyInIssuingPlant                *string  `json:"BatchMgmtPolicyInIssuingPlant"`
+	BatchMgmtPolicyInReceivingPlant              *string  `json:"BatchMgmtPolicyInReceivingPlant"`
+	ProductionPlantBatch                         *string  `json:"ProductionPlantBatch"`
+	IssuingPlantBatch                            *string  `json:"IssuingPlantBatch"`
+	ReceivingPlantBatch                          *string  `json:"ReceivingPlantBatch"`
+	ProductionPlantBatchValidityStartDate        *string  `json:"ProductionPlantBatchValidityStartDate"`
+	ProductionPlantBatchValidityEndDate          *string  `json:"ProductionPlantBatchValidityEndDate"`
+	IssuingPlantBatchValidityStartDate           *string  `json:"IssuingPlantBatchValidityStartDate"`
+	IssuingPlantBatchValidityEndDate             *string  `json:"IssuingPlantBatchValidityEndDate"`
+	ReceivingPlantBatchValidityStartDate         *string  `json:"ReceivingPlantBatchValidityStartDate"`
+	ReceivingPlantBatchValidityEndDate           *string  `json:"ReceivingPlantBatchValidityEndDate"`
+	Incoterms                                    *string  `json:"Incoterms"`
+	BPTaxClassification                          string   `json:"BPTaxClassification"`
+	ProductTaxClassification                     string   `json:"ProductTaxClassification"`
+	BPAccountAssignmentGroup                     string   `json:"BPAccountAssignmentGroup"`
+	ProductAccountAssignmentGroup                string   `json:"ProductAccountAssignmentGroup"`
+	PaymentTerms                                 string   `json:"PaymentTerms"`
+	PaymentMethod                                string   `json:"PaymentMethod"`
+	Project                                      *string  `json:"Project"`
+	TaxCode                                      *string  `json:"TaxCode"`
+	TaxRate                                      *float32 `json:"TaxRate"`
+	CountryOfOrigin                              *string  `json:"CountryOfOrigin"`
 }

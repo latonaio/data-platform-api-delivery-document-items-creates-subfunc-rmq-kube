@@ -10,7 +10,7 @@
   "message": {
     "Item": [
       {
-        "DeliveryDocument": 80000036,
+        "DeliveryDocument": 80000041,
         "DeliveryDocumentItem": 1,
         "DeliveryDocumentItemCategory": "",
         "DeliveryDocumentItemText": "",
@@ -18,7 +18,7 @@
         "ProductStandardID": "543670",
         "ProductGroup": null,
         "BaseUnit": "ACR",
-        "OriginalDeliveryQuantity": 0,
+        "OriginalDeliveryQuantity": null,
         "DeliveryQuantityUnit": "",
         "ActualGoodsIssueDate": "",
         "ActualGoodsIssueTime": "",

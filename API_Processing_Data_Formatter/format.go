@@ -7,12 +7,8 @@ import (
 	"fmt"
 )
 
-func getBoolPtr(b bool) *bool {
-	return &b
-}
-
-// initializer
-func (psdc *SDC) ConvertToMetaData(sdc *api_input_reader.SDC) (*MetaData, error) {
+// Initializer
+func (psdc *SDC) ConvertToMetaData(sdc *api_input_reader.SDC) *MetaData {
 	pm := &requests.MetaData{
 		BusinessPartnerID: sdc.BusinessPartnerID,
 		ServiceLabel:      sdc.ServiceLabel,
@@ -24,117 +20,313 @@ func (psdc *SDC) ConvertToMetaData(sdc *api_input_reader.SDC) (*MetaData, error)
 		ServiceLabel:      data.ServiceLabel,
 	}
 
-	return &metaData, nil
+	return &metaData
 }
 
-func (psdc *SDC) ConvertToOrderIDKey(sdc *api_input_reader.SDC) (*OrderIDKey, error) {
-	pm := &requests.OrderIDKey{
-		ReferenceDocument:               sdc.DeliveryDocument.ReferenceDocument,
-		HeaderCompleteDeliveryIsDefined: getBoolPtr(false),
-		OverallDeliveryStatus:           "CL",
-	}
+func (psdc *SDC) ConvertToProcessType() *ProcessType {
+	pm := &requests.ProcessType{}
 	data := pm
 
-	orderIDKey := OrderIDKey{
-		ReferenceDocument:               data.ReferenceDocument,
-		HeaderCompleteDeliveryIsDefined: data.HeaderCompleteDeliveryIsDefined,
-		OverallDeliveryStatus:           data.OverallDeliveryStatus,
+	processType := ProcessType{
+		BulkProcess:       data.BulkProcess,
+		IndividualProcess: data.IndividualProcess,
 	}
 
-	return &orderIDKey, nil
+	return &processType
 }
 
-func (psdc *SDC) ConvertToOrderID(
-	sdc *api_input_reader.SDC,
-	rows *sql.Rows,
-) (*[]OrderID, error) {
-	var orderID []OrderID
-	pm := &requests.OrderID{
-		ReferenceDocument:               nil,
-		OrderID:                         nil,
-		HeaderCompleteDeliveryIsDefined: nil,
-		OverallDeliveryStatus:           "",
+func (psdc *SDC) ConvertToOrderIDKey() *OrderIDKey {
+	pm := &requests.OrderIDKey{
+		IssuingPlantPartnerFunction:   "DELIVERFROM",
+		ReceivingPlantPartnerFunction: "DELIVERTO",
+		ItemCompleteDeliveryIsDefined: false,
+		ItemDeliveryStatus:            "CL",
+		ItemDeliveryBlockStatus:       false,
 	}
 
+	data := pm
+	orderIDKey := OrderIDKey{
+		OrderID:                           data.OrderID,
+		OrderItem:                         data.OrderItem,
+		IssuingPlantPartnerFunction:       data.IssuingPlantPartnerFunction,
+		IssuingPlantBusinessPartner:       data.IssuingPlantBusinessPartner,
+		IssuingPlantBusinessPartnerFrom:   data.IssuingPlantBusinessPartnerFrom,
+		IssuingPlantBusinessPartnerTo:     data.IssuingPlantBusinessPartnerTo,
+		ReceivingPlantPartnerFunction:     data.ReceivingPlantPartnerFunction,
+		ReceivingPlantBusinessPartner:     data.ReceivingPlantBusinessPartner,
+		ReceivingPlantBusinessPartnerFrom: data.ReceivingPlantBusinessPartnerFrom,
+		ReceivingPlantBusinessPartnerTo:   data.ReceivingPlantBusinessPartnerTo,
+		IssuingPlant:                      data.IssuingPlant,
+		IssuingPlantFrom:                  data.IssuingPlantFrom,
+		IssuingPlantTo:                    data.IssuingPlantTo,
+		ReceivingPlant:                    data.ReceivingPlant,
+		ReceivingPlantFrom:                data.ReceivingPlantFrom,
+		ReceivingPlantTo:                  data.ReceivingPlantTo,
+		ItemCompleteDeliveryIsDefined:     data.ItemCompleteDeliveryIsDefined,
+		ItemDeliveryStatus:                data.ItemDeliveryStatus,
+		ItemDeliveryBlockStatus:           data.ItemDeliveryBlockStatus,
+	}
+
+	return &orderIDKey
+}
+
+func (psdc *SDC) ConvertToOrderIDByArraySpec(rows *sql.Rows) (*[]OrderID, error) {
+	var orderID []OrderID
+
 	for i := 0; true; i++ {
+		pm := &requests.OrderID{}
+
 		if !rows.Next() {
 			if i == 0 {
-				return nil, fmt.Errorf("DBに対象のレコードが存在しません。")
+				return nil, fmt.Errorf("'data_platform_orders_item_data'テーブルに対象のレコードが存在しません。")
 			} else {
 				break
 			}
 		}
 		err := rows.Scan(
 			&pm.OrderID,
-			&pm.HeaderCompleteDeliveryIsDefined,
-			&pm.OverallDeliveryStatus,
+			&pm.OrderItem,
+			&pm.IssuingPlantBusinessPartner,
+			&pm.ReceivingPlantBusinessPartner,
+			&pm.IssuingPlant,
+			&pm.ReceivingPlant,
+			&pm.IssuingPlantPartnerFunction,
+			&pm.ReceivingPlantPartnerFunction,
+			&pm.ItemCompleteDeliveryIsDefined,
+			&pm.ItemDeliveryStatus,
+			&pm.ItemDeliveryBlockStatus,
 		)
 		if err != nil {
 			fmt.Printf("err = %+v \n", err)
 			return nil, err
 		}
 
-		pm.ReferenceDocument = pm.OrderID
-
 		data := pm
 		orderID = append(orderID, OrderID{
-			ReferenceDocument:               data.ReferenceDocument,
-			OrderID:                         data.OrderID,
-			HeaderCompleteDeliveryIsDefined: data.HeaderCompleteDeliveryIsDefined,
-			OverallDeliveryStatus:           data.OverallDeliveryStatus,
+			OrderID:                       data.OrderID,
+			OrderItem:                     data.OrderItem,
+			IssuingPlantPartnerFunction:   data.IssuingPlantPartnerFunction,
+			IssuingPlantBusinessPartner:   data.IssuingPlantBusinessPartner,
+			ReceivingPlantPartnerFunction: data.ReceivingPlantPartnerFunction,
+			ReceivingPlantBusinessPartner: data.ReceivingPlantBusinessPartner,
+			IssuingPlant:                  data.IssuingPlant,
+			ReceivingPlant:                data.ReceivingPlant,
+			ItemCompleteDeliveryIsDefined: data.ItemCompleteDeliveryIsDefined,
+			ItemDeliveryStatus:            data.ItemDeliveryStatus,
+			ItemDeliveryBlockStatus:       data.ItemDeliveryBlockStatus,
 		})
 	}
 
 	return &orderID, nil
 }
 
-// DeliveryDocument
-func (psdc *SDC) ConvertToDeliveryDocumentItem(sdc *api_input_reader.SDC) (*[]DeliveryDocumentItem, error) {
-	var deliveryDocumentItem []DeliveryDocumentItem
+func (psdc *SDC) ConvertToOrderIDByRangeSpec(rows *sql.Rows) (*[]OrderID, error) {
+	var orderID []OrderID
 
-	for i := range sdc.DeliveryDocument.DeliveryDocumentItem {
-		pm := &requests.DeliveryDocumentItem{}
+	for i := 0; true; i++ {
+		pm := &requests.OrderID{}
 
-		pm.DeliveryDocumentItemNumber = i + 1
+		if !rows.Next() {
+			if i == 0 {
+				return nil, fmt.Errorf("'data_platform_orders_item_data'テーブルに対象のレコードが存在しません。")
+			} else {
+				break
+			}
+		}
+		err := rows.Scan(
+			&pm.OrderID,
+			&pm.OrderItem,
+			&pm.IssuingPlantBusinessPartner,
+			&pm.ReceivingPlantBusinessPartner,
+			&pm.IssuingPlant,
+			&pm.ReceivingPlant,
+			&pm.IssuingPlantPartnerFunction,
+			&pm.ReceivingPlantPartnerFunction,
+			&pm.ItemCompleteDeliveryIsDefined,
+			&pm.ItemDeliveryStatus,
+			&pm.ItemDeliveryBlockStatus,
+		)
+		if err != nil {
+			fmt.Printf("err = %+v \n", err)
+			return nil, err
+		}
 
 		data := pm
-		deliveryDocumentItem = append(deliveryDocumentItem, DeliveryDocumentItem{
-			DeliveryDocumentItemNumber: data.DeliveryDocumentItemNumber,
+		orderID = append(orderID, OrderID{
+			OrderID:                       data.OrderID,
+			OrderItem:                     data.OrderItem,
+			IssuingPlantPartnerFunction:   data.IssuingPlantPartnerFunction,
+			IssuingPlantBusinessPartner:   data.IssuingPlantBusinessPartner,
+			ReceivingPlantPartnerFunction: data.ReceivingPlantPartnerFunction,
+			ReceivingPlantBusinessPartner: data.ReceivingPlantBusinessPartner,
+			IssuingPlant:                  data.IssuingPlant,
+			ReceivingPlant:                data.ReceivingPlant,
+			ItemCompleteDeliveryIsDefined: data.ItemCompleteDeliveryIsDefined,
+			ItemDeliveryStatus:            data.ItemDeliveryStatus,
+			ItemDeliveryBlockStatus:       data.ItemDeliveryBlockStatus,
 		})
 	}
 
-	return &deliveryDocumentItem, nil
+	return &orderID, nil
 }
 
-func (psdc *SDC) ConvertToCalculateDeliveryDocumentKey() (*CalculateDeliveryDocumentKey, error) {
+func (psdc *SDC) ConvertToOrderIDInIndividualProcessKey() *OrderIDKey {
+	pm := &requests.OrderIDKey{
+		ItemCompleteDeliveryIsDefined: false,
+		ItemDeliveryStatus:            "CL",
+		ItemDeliveryBlockStatus:       false,
+	}
+
+	data := pm
+	orderIDKey := OrderIDKey{
+		OrderID:                           data.OrderID,
+		OrderItem:                         data.OrderItem,
+		IssuingPlantPartnerFunction:       data.IssuingPlantPartnerFunction,
+		IssuingPlantBusinessPartner:       data.IssuingPlantBusinessPartner,
+		IssuingPlantBusinessPartnerFrom:   data.IssuingPlantBusinessPartnerFrom,
+		IssuingPlantBusinessPartnerTo:     data.IssuingPlantBusinessPartnerTo,
+		ReceivingPlantPartnerFunction:     data.ReceivingPlantPartnerFunction,
+		ReceivingPlantBusinessPartner:     data.ReceivingPlantBusinessPartner,
+		ReceivingPlantBusinessPartnerFrom: data.ReceivingPlantBusinessPartnerFrom,
+		ReceivingPlantBusinessPartnerTo:   data.ReceivingPlantBusinessPartnerTo,
+		IssuingPlant:                      data.IssuingPlant,
+		IssuingPlantFrom:                  data.IssuingPlantFrom,
+		IssuingPlantTo:                    data.IssuingPlantTo,
+		ReceivingPlant:                    data.ReceivingPlant,
+		ReceivingPlantFrom:                data.ReceivingPlantFrom,
+		ReceivingPlantTo:                  data.ReceivingPlantTo,
+		ItemCompleteDeliveryIsDefined:     data.ItemCompleteDeliveryIsDefined,
+		ItemDeliveryStatus:                data.ItemDeliveryStatus,
+		ItemDeliveryBlockStatus:           data.ItemDeliveryBlockStatus,
+	}
+
+	return &orderIDKey
+}
+
+func (psdc *SDC) ConvertToOrderIDInIndividualProcess(rows *sql.Rows) (*[]OrderID, error) {
+	var orderID []OrderID
+
+	for i := 0; true; i++ {
+		pm := &requests.OrderID{}
+
+		if !rows.Next() {
+			if i == 0 {
+				return nil, fmt.Errorf("'data_platform_orders_item_data'テーブルに対象のレコードが存在しません。")
+			} else {
+				break
+			}
+		}
+		err := rows.Scan(
+			&pm.OrderID,
+			&pm.OrderItem,
+			&pm.ItemCompleteDeliveryIsDefined,
+			&pm.ItemDeliveryStatus,
+			&pm.ItemDeliveryBlockStatus,
+		)
+		if err != nil {
+			fmt.Printf("err = %+v \n", err)
+			return nil, err
+		}
+
+		data := pm
+		orderID = append(orderID, OrderID{
+			OrderID:                       data.OrderID,
+			OrderItem:                     data.OrderItem,
+			IssuingPlantPartnerFunction:   data.IssuingPlantPartnerFunction,
+			IssuingPlantBusinessPartner:   data.IssuingPlantBusinessPartner,
+			ReceivingPlantPartnerFunction: data.ReceivingPlantPartnerFunction,
+			ReceivingPlantBusinessPartner: data.ReceivingPlantBusinessPartner,
+			IssuingPlant:                  data.IssuingPlant,
+			ReceivingPlant:                data.ReceivingPlant,
+			ItemCompleteDeliveryIsDefined: data.ItemCompleteDeliveryIsDefined,
+			ItemDeliveryStatus:            data.ItemDeliveryStatus,
+			ItemDeliveryBlockStatus:       data.ItemDeliveryBlockStatus,
+		})
+	}
+
+	return &orderID, nil
+}
+
+func (psdc *SDC) ConvertToOrderItemScheduleLineKey() *OrderItemScheduleLineKey {
+	pm := &requests.OrderItemScheduleLineKey{
+		ItemScheduleLineDeliveryBlockStatus: false,
+	}
+
+	data := pm
+	orderItemScheduleLineKey := OrderItemScheduleLineKey{
+		OrderID:                             data.OrderID,
+		OrderItem:                           data.OrderItem,
+		ItemScheduleLineDeliveryBlockStatus: data.ItemScheduleLineDeliveryBlockStatus,
+		ConfirmedDeliveryDate:               data.ConfirmedDeliveryDate,
+		ConfirmedDeliveryDateFrom:           data.ConfirmedDeliveryDateFrom,
+		ConfirmedDeliveryDateTo:             data.ConfirmedDeliveryDateTo,
+	}
+
+	return &orderItemScheduleLineKey
+}
+
+func (psdc *SDC) ConvertToOrderItemScheduleLine(rows *sql.Rows) (*[]OrderItemScheduleLine, error) {
+	var orderItemScheduleLine []OrderItemScheduleLine
+
+	for i := 0; true; i++ {
+		pm := &requests.OrderItemScheduleLine{}
+		if !rows.Next() {
+			if i == 0 {
+				return nil, fmt.Errorf("'data_platform_orders_item_schedule_line_data'テーブルに対象のレコードが存在しません。")
+			} else {
+				break
+			}
+		}
+		err := rows.Scan(
+			&pm.OrderID,
+			&pm.OrderItem,
+			&pm.ItemScheduleLineDeliveryBlockStatus,
+			&pm.ConfirmedDeliveryDate,
+			&pm.OrderItemScheduleLine,
+			&pm.ScheduleLineOrderQuantity,
+			&pm.OpenConfdDelivQtyInOrdQtyUnit,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		data := pm
+		orderItemScheduleLine = append(orderItemScheduleLine, OrderItemScheduleLine{
+			OrderID:                             data.OrderID,
+			OrderItem:                           data.OrderItem,
+			ItemScheduleLineDeliveryBlockStatus: data.ItemScheduleLineDeliveryBlockStatus,
+			ConfirmedDeliveryDate:               data.ConfirmedDeliveryDate,
+			OrderItemScheduleLine:               data.OrderItemScheduleLine,
+			ScheduleLineOrderQuantity:           data.ScheduleLineOrderQuantity,
+			OpenConfdDelivQtyInOrdQtyUnit:       data.OpenConfdDelivQtyInOrdQtyUnit,
+		})
+	}
+
+	return &orderItemScheduleLine, nil
+}
+
+// Header
+func (psdc *SDC) ConvertToCalculateDeliveryDocumentKey() *CalculateDeliveryDocumentKey {
 	pm := &requests.CalculateDeliveryDocumentKey{
-		ServiceLabel:             "",
 		FieldNameWithNumberRange: "DeliveryDocument",
 	}
-	data := pm
 
+	data := pm
 	calculateDeliveryDocumentKey := CalculateDeliveryDocumentKey{
 		ServiceLabel:             data.ServiceLabel,
 		FieldNameWithNumberRange: data.FieldNameWithNumberRange,
 	}
 
-	return &calculateDeliveryDocumentKey, nil
+	return &calculateDeliveryDocumentKey
 }
 
-func (psdc *SDC) ConvertToCalculateDeliveryDocumentQueryGets(
-	sdc *api_input_reader.SDC,
-	rows *sql.Rows,
-) (*CalculateDeliveryDocumentQueryGets, error) {
-	pm := &requests.CalculateDeliveryDocumentQueryGets{
-		ServiceLabel:                 "",
-		FieldNameWithNumberRange:     "",
-		DeliveryDocumentLatestNumber: nil,
-	}
+func (psdc *SDC) ConvertToCalculateDeliveryDocumentQueryGets(rows *sql.Rows) (*CalculateDeliveryDocumentQueryGets, error) {
+	pm := &requests.CalculateDeliveryDocumentQueryGets{}
 
 	for i := 0; true; i++ {
 		if !rows.Next() {
 			if i == 0 {
-				return nil, fmt.Errorf("DBに対象のレコードが存在しません。")
+				return nil, fmt.Errorf("'data_platform_number_range_latest_number_data'テーブルに対象のレコードが存在しません。")
 			} else {
 				break
 			}
@@ -148,8 +340,8 @@ func (psdc *SDC) ConvertToCalculateDeliveryDocumentQueryGets(
 			return nil, err
 		}
 	}
-	data := pm
 
+	data := pm
 	calculateDeliveryDocumentQueryGets := CalculateDeliveryDocumentQueryGets{
 		ServiceLabel:                 data.ServiceLabel,
 		FieldNameWithNumberRange:     data.FieldNameWithNumberRange,
@@ -159,85 +351,80 @@ func (psdc *SDC) ConvertToCalculateDeliveryDocumentQueryGets(
 	return &calculateDeliveryDocumentQueryGets, nil
 }
 
-func (psdc *SDC) ConvertToCalculateDeliveryDocument(
-	deliveryDocumentLatestNumber *int,
-) (*CalculateDeliveryDocument, error) {
-	pm := &requests.CalculateDeliveryDocument{
-		DeliveryDocumentLatestNumber: nil,
-		DeliveryDocument:             nil,
-	}
+func (psdc *SDC) ConvertToCalculateDeliveryDocument(deliveryDocumentLatestNumber *int, deliveryDocument int) *CalculateDeliveryDocument {
+	pm := &requests.CalculateDeliveryDocument{}
 
 	pm.DeliveryDocumentLatestNumber = deliveryDocumentLatestNumber
-	data := pm
+	pm.DeliveryDocument = deliveryDocument
 
+	data := pm
 	calculateDeliveryDocument := CalculateDeliveryDocument{
 		DeliveryDocumentLatestNumber: data.DeliveryDocumentLatestNumber,
 		DeliveryDocument:             data.DeliveryDocument,
 	}
 
-	return &calculateDeliveryDocument, nil
+	return &calculateDeliveryDocument
 }
 
 // Item
-func (psdc *SDC) ConvertToItemOrdersItemKey(sdc *api_input_reader.SDC, orderID *[]OrderID) (*[]ItemOrdersItemKey, error) {
-	var itemOrdersItemKey []ItemOrdersItemKey
-	var pm []requests.ItemOrdersItemKey
-	for _, v := range *orderID {
-		pm = append(pm, requests.ItemOrdersItemKey{
-			OrderID:                       v.OrderID,
-			ItemCompleteDeliveryIsDefined: getBoolPtr(false),
-			StockConfirmationStatus:       "NP",
+func (psdc *SDC) ConvertToDeliveryDocumentItem(length int) *[]DeliveryDocumentItem {
+	var deliveryDocumentItem []DeliveryDocumentItem
+
+	for i := 0; i < length; i++ {
+		pm := &requests.DeliveryDocumentItem{}
+
+		pm.DeliveryDocumentItemNumber = i + 1
+
+		data := pm
+		deliveryDocumentItem = append(deliveryDocumentItem, DeliveryDocumentItem{
+			DeliveryDocumentItemNumber: data.DeliveryDocumentItemNumber,
 		})
 	}
 
-	data := pm
-
-	for _, v := range data {
-		itemOrdersItemKey = append(itemOrdersItemKey, ItemOrdersItemKey{
-			OrderID:                       v.OrderID,
-			ItemCompleteDeliveryIsDefined: v.ItemCompleteDeliveryIsDefined,
-			StockConfirmationStatus:       v.StockConfirmationStatus,
-		})
-	}
-
-	return &itemOrdersItemKey, nil
+	return &deliveryDocumentItem
 }
 
-func (psdc *SDC) ConvertToItemOrdersItem(
+func (psdc *SDC) ConvertToOrdersItem(
 	sdc *api_input_reader.SDC,
 	rows *sql.Rows,
-) (*[]ItemOrdersItem, error) {
-	var itemOrdersItem []ItemOrdersItem
-
-	pm := &requests.ItemOrdersItem{}
+) (*[]OrdersItem, error) {
+	var ordersItem []OrdersItem
 
 	for i := 0; true; i++ {
+		pm := &requests.OrdersItem{}
 		if !rows.Next() {
 			if i == 0 {
-				return nil, fmt.Errorf("DBに対象のレコードが存在しません。")
+				return nil, fmt.Errorf("'data_platform_orders_item_data'テーブルに対象のレコードが存在しません。")
 			} else {
 				break
 			}
 		}
 		err := rows.Scan(
 			&pm.OrderID,
-			&pm.ItemCompleteDeliveryIsDefined,
 			&pm.OrderItem,
 			&pm.OrderItemCategory,
 			&pm.OrderItemText,
+			&pm.OrderItemTextByBuyer,
+			&pm.OrderItemTextBySeller,
 			&pm.Product,
 			&pm.ProductStandardID,
 			&pm.BaseUnit,
-			&pm.OrderQuantityInBaseUnit,
 			&pm.StockConfirmationPartnerFunction,
 			&pm.StockConfirmationBusinessPartner,
 			&pm.StockConfirmationPlant,
+			&pm.StockConfirmationPlantBatch,
+			&pm.StockConfirmationPlantBatchValidityStartDate,
+			&pm.StockConfirmationPlantBatchValidityEndDate,
+			&pm.OrderQuantityInBaseUnit,
+			&pm.OrderQuantityInIssuingUnit,
+			&pm.OrderQuantityInReceivingUnit,
+			&pm.OrderIssuingUnit,
+			&pm.OrderReceivingUnit,
 			&pm.StockConfirmationPolicy,
 			&pm.StockConfirmationStatus,
+			&pm.ItemWeightUnit,
 			&pm.ItemGrossWeight,
 			&pm.ItemNetWeight,
-			&pm.ItemWeightUnit,
-			&pm.ProductGroup,
 			&pm.ProductionPlantPartnerFunction,
 			&pm.ProductionPlantBusinessPartner,
 			&pm.ProductionPlant,
@@ -285,69 +472,75 @@ func (psdc *SDC) ConvertToItemOrdersItem(
 		}
 
 		data := pm
-		itemOrdersItem = append(itemOrdersItem, ItemOrdersItem{
-			DeliveryDocument:                       data.DeliveryDocument,
-			OrderID:                                data.OrderID,
-			ItemCompleteDeliveryIsDefined:          data.ItemCompleteDeliveryIsDefined,
-			OrderItem:                              data.OrderItem,
-			OrderItemCategory:                      data.OrderItemCategory,
-			OrderItemText:                          data.OrderItemText,
-			Product:                                data.Product,
-			ProductStandardID:                      data.ProductStandardID,
-			BaseUnit:                               data.BaseUnit,
-			OrderQuantityInBaseUnit:                data.OrderQuantityInBaseUnit,
-			StockConfirmationPartnerFunction:       data.StockConfirmationPartnerFunction,
-			StockConfirmationBusinessPartner:       data.StockConfirmationBusinessPartner,
-			StockConfirmationPlant:                 data.StockConfirmationPlant,
-			StockConfirmationPolicy:                data.StockConfirmationPolicy,
-			StockConfirmationStatus:                data.StockConfirmationStatus,
-			ItemGrossWeight:                        data.ItemGrossWeight,
-			ItemNetWeight:                          data.ItemNetWeight,
-			ItemWeightUnit:                         data.ItemWeightUnit,
-			ProductGroup:                           data.ProductGroup,
-			ProductionPlantPartnerFunction:         data.ProductionPlantPartnerFunction,
-			ProductionPlantBusinessPartner:         data.ProductionPlantBusinessPartner,
-			ProductionPlant:                        data.ProductionPlant,
-			ProductionPlantTimeZone:                data.ProductionPlantTimeZone,
-			ProductionPlantStorageLocation:         data.ProductionPlantStorageLocation,
-			IssuingPlantPartnerFunction:            data.IssuingPlantPartnerFunction,
-			IssuingPlantBusinessPartner:            data.IssuingPlantBusinessPartner,
-			IssuingPlant:                           data.IssuingPlant,
-			IssuingPlantTimeZone:                   data.IssuingPlantTimeZone,
-			IssuingPlantStorageLocation:            data.IssuingPlantStorageLocation,
-			ReceivingPlantPartnerFunction:          data.ReceivingPlantPartnerFunction,
-			ReceivingPlantBusinessPartner:          data.ReceivingPlantBusinessPartner,
-			ReceivingPlant:                         data.ReceivingPlant,
-			ReceivingPlantTimeZone:                 data.ReceivingPlantTimeZone,
-			ReceivingPlantStorageLocation:          data.ReceivingPlantStorageLocation,
-			ProductIsBatchManagedInProductionPlant: data.ProductIsBatchManagedInProductionPlant,
-			ProductIsBatchManagedInIssuingPlant:    data.ProductIsBatchManagedInIssuingPlant,
-			ProductIsBatchManagedInReceivingPlant:  data.ProductIsBatchManagedInReceivingPlant,
-			BatchMgmtPolicyInProductionPlant:       data.BatchMgmtPolicyInProductionPlant,
-			BatchMgmtPolicyInIssuingPlant:          data.BatchMgmtPolicyInIssuingPlant,
-			BatchMgmtPolicyInReceivingPlant:        data.BatchMgmtPolicyInReceivingPlant,
-			ProductionPlantBatch:                   data.ProductionPlantBatch,
-			IssuingPlantBatch:                      data.IssuingPlantBatch,
-			ReceivingPlantBatch:                    data.ReceivingPlantBatch,
-			ProductionPlantBatchValidityStartDate:  data.ProductionPlantBatchValidityStartDate,
-			ProductionPlantBatchValidityEndDate:    data.ProductionPlantBatchValidityEndDate,
-			IssuingPlantBatchValidityStartDate:     data.IssuingPlantBatchValidityStartDate,
-			IssuingPlantBatchValidityEndDate:       data.IssuingPlantBatchValidityEndDate,
-			ReceivingPlantBatchValidityStartDate:   data.ReceivingPlantBatchValidityStartDate,
-			ReceivingPlantBatchValidityEndDate:     data.ReceivingPlantBatchValidityEndDate,
-			Incoterms:                              data.Incoterms,
-			BPTaxClassification:                    data.BPTaxClassification,
-			ProductTaxClassification:               data.ProductTaxClassification,
-			BPAccountAssignmentGroup:               data.BPAccountAssignmentGroup,
-			ProductAccountAssignmentGroup:          data.ProductAccountAssignmentGroup,
-			PaymentTerms:                           data.PaymentTerms,
-			PaymentMethod:                          data.PaymentMethod,
-			Project:                                data.Project,
-			TaxCode:                                data.TaxCode,
-			TaxRate:                                data.TaxRate,
-			CountryOfOrigin:                        data.CountryOfOrigin,
+		ordersItem = append(ordersItem, OrdersItem{
+			OrderID:                          data.OrderID,
+			OrderItem:                        data.OrderItem,
+			OrderItemCategory:                data.OrderItemCategory,
+			OrderItemText:                    data.OrderItemText,
+			OrderItemTextByBuyer:             data.OrderItemTextByBuyer,
+			OrderItemTextBySeller:            data.OrderItemTextBySeller,
+			Product:                          data.Product,
+			ProductStandardID:                data.ProductStandardID,
+			BaseUnit:                         data.BaseUnit,
+			StockConfirmationPartnerFunction: data.StockConfirmationPartnerFunction,
+			StockConfirmationBusinessPartner: data.StockConfirmationBusinessPartner,
+			StockConfirmationPlant:           data.StockConfirmationPlant,
+			StockConfirmationPlantBatch:      data.StockConfirmationPlantBatch,
+			StockConfirmationPlantBatchValidityStartDate: data.StockConfirmationPlantBatchValidityStartDate,
+			StockConfirmationPlantBatchValidityEndDate:   data.StockConfirmationPlantBatchValidityEndDate,
+			OrderQuantityInBaseUnit:                      data.OrderQuantityInBaseUnit,
+			OrderQuantityInIssuingUnit:                   data.OrderQuantityInIssuingUnit,
+			OrderQuantityInReceivingUnit:                 data.OrderQuantityInReceivingUnit,
+			OrderIssuingUnit:                             data.OrderIssuingUnit,
+			OrderReceivingUnit:                           data.OrderReceivingUnit,
+			StockConfirmationPolicy:                      data.StockConfirmationPolicy,
+			StockConfirmationStatus:                      data.StockConfirmationStatus,
+			ItemWeightUnit:                               data.ItemWeightUnit,
+			ItemGrossWeight:                              data.ItemGrossWeight,
+			ItemNetWeight:                                data.ItemNetWeight,
+			ProductionPlantPartnerFunction:               data.ProductionPlantPartnerFunction,
+			ProductionPlantBusinessPartner:               data.ProductionPlantBusinessPartner,
+			ProductionPlant:                              data.ProductionPlant,
+			ProductionPlantTimeZone:                      data.ProductionPlantTimeZone,
+			ProductionPlantStorageLocation:               data.ProductionPlantStorageLocation,
+			IssuingPlantPartnerFunction:                  data.IssuingPlantPartnerFunction,
+			IssuingPlantBusinessPartner:                  data.IssuingPlantBusinessPartner,
+			IssuingPlant:                                 data.IssuingPlant,
+			IssuingPlantTimeZone:                         data.IssuingPlantTimeZone,
+			IssuingPlantStorageLocation:                  data.IssuingPlantStorageLocation,
+			ReceivingPlantPartnerFunction:                data.ReceivingPlantPartnerFunction,
+			ReceivingPlantBusinessPartner:                data.ReceivingPlantBusinessPartner,
+			ReceivingPlant:                               data.ReceivingPlant,
+			ReceivingPlantTimeZone:                       data.ReceivingPlantTimeZone,
+			ReceivingPlantStorageLocation:                data.ReceivingPlantStorageLocation,
+			ProductIsBatchManagedInProductionPlant:       data.ProductIsBatchManagedInProductionPlant,
+			ProductIsBatchManagedInIssuingPlant:          data.ProductIsBatchManagedInIssuingPlant,
+			ProductIsBatchManagedInReceivingPlant:        data.ProductIsBatchManagedInReceivingPlant,
+			BatchMgmtPolicyInProductionPlant:             data.BatchMgmtPolicyInProductionPlant,
+			BatchMgmtPolicyInIssuingPlant:                data.BatchMgmtPolicyInIssuingPlant,
+			BatchMgmtPolicyInReceivingPlant:              data.BatchMgmtPolicyInReceivingPlant,
+			ProductionPlantBatch:                         data.ProductionPlantBatch,
+			IssuingPlantBatch:                            data.IssuingPlantBatch,
+			ReceivingPlantBatch:                          data.ReceivingPlantBatch,
+			ProductionPlantBatchValidityStartDate:        data.ProductionPlantBatchValidityStartDate,
+			ProductionPlantBatchValidityEndDate:          data.ProductionPlantBatchValidityEndDate,
+			IssuingPlantBatchValidityStartDate:           data.IssuingPlantBatchValidityStartDate,
+			IssuingPlantBatchValidityEndDate:             data.IssuingPlantBatchValidityEndDate,
+			ReceivingPlantBatchValidityStartDate:         data.ReceivingPlantBatchValidityStartDate,
+			ReceivingPlantBatchValidityEndDate:           data.ReceivingPlantBatchValidityEndDate,
+			Incoterms:                                    data.Incoterms,
+			BPTaxClassification:                          data.BPTaxClassification,
+			ProductTaxClassification:                     data.ProductTaxClassification,
+			BPAccountAssignmentGroup:                     data.BPAccountAssignmentGroup,
+			ProductAccountAssignmentGroup:                data.ProductAccountAssignmentGroup,
+			PaymentTerms:                                 data.PaymentTerms,
+			PaymentMethod:                                data.PaymentMethod,
+			Project:                                      data.Project,
+			TaxCode:                                      data.TaxCode,
+			TaxRate:                                      data.TaxRate,
+			CountryOfOrigin:                              data.CountryOfOrigin,
 		})
 	}
 
-	return &itemOrdersItem, nil
+	return &ordersItem, nil
 }
